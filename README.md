@@ -1,9 +1,22 @@
 # LockIn (beta)
 
 App de accountability para un grupo de amigos: pasos diarios, gimnasio,
-dieta, "shit meals/days", mensajes de aliento, y un puntaje semanal por
-grupo. Se ve y se usa como una app de celular (podés agregarla a la pantalla
-de inicio).
+dieta, "shit meals/days", mensajes de aliento, calendario semana/mes, país y
+huso horario de cada quien, y un puntaje semanal por grupo. Se ve y se usa
+como una app de celular (podés agregarla a la pantalla de inicio).
+
+## Producción (link real)
+
+- App: https://lock-in-delta.vercel.app
+- API: https://lockin-5e2u.onrender.com
+- Repo: https://github.com/LucianoCR123/LockIn
+- Base de datos: Postgres en Neon (gratis)
+
+El backend en Render (plan gratis) "duerme" tras ~15 min sin uso — la primera
+carga del día puede tardar 30-50s en responder mientras despierta, es normal.
+
+Cada `git push` a `main` en GitHub despliega solo (Render y Vercel están
+conectados al repo).
 
 ## Requisitos
 
@@ -19,8 +32,7 @@ no chocar con `rating-app`, que ya lo ocupa):
 ```bash
 cd server
 npm install
-npm run prisma:migrate     # crea la base SQLite (dev.db)
-npm run dev                # arranca con auto-reload
+npm run dev                # arranca con auto-reload (usa la base Postgres de Neon)
 ```
 
 Frontend (en `http://localhost:5173`):
@@ -69,8 +81,9 @@ desplegarla a un hosting real — avísame cuando quieran dar ese paso.
 
 ## Notas técnicas
 
-- Backend: Express + Prisma + SQLite (`server/prisma/dev.db`), auth con JWT
-  en cookie httpOnly.
+- Backend: Express + Prisma + Postgres (Neon), auth con JWT en cookie
+  httpOnly (`sameSite: "none"` + `secure` en producción, porque frontend y
+  backend viven en dominios distintos).
 - Frontend: React + Vite. `client/src/api.js` usa el mismo host con el que se
   cargó la página, por eso funciona igual en `localhost` y en la IP LAN.
 - El registro de pasos/gimnasio/dieta (`DailyLog`) es **por usuario y por
