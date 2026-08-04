@@ -1,8 +1,9 @@
-// En produccion (Vercel), VITE_API_URL apunta al backend real (Render). En
-// local/LAN, sin esa variable, usa el mismo host con el que se cargo la
-// pagina (funciona en localhost y en la IP LAN desde el celular).
-const API_HOST = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:4001`;
-const API_BASE = `${API_HOST}/api`;
+// En produccion, el navegador solo le habla a Vercel (mismo dominio) y
+// vercel.json reenvia /api/* al backend de Render por detras — asi la
+// cookie de sesion queda "same-site" y no la bloquea Safari/ITP (bloquea
+// cookies entre dominios distintos aunque sean SameSite=None). En
+// local/LAN usa el mismo host con el que se cargo la pagina.
+const API_BASE = import.meta.env.PROD ? "/api" : `${window.location.protocol}//${window.location.hostname}:4001/api`;
 
 async function request(path, { method = "GET", body } = {}) {
   const res = await fetch(`${API_BASE}${path}`, {

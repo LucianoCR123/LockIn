@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://lockin-5e2u.onrender.com/api/:path*" }
+  ]
+}

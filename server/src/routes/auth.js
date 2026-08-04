@@ -11,11 +11,11 @@ function setAuthCookie(res, userId) {
   const token = signToken(userId);
   res.cookie("token", token, {
     httpOnly: true,
-    // En producción el frontend (Vercel) y el backend (Render) viven en
-    // dominios distintos, no solo puertos distintos como en local: hace
-    // falta "none" + secure para que el navegador mande la cookie
-    // cross-site. En local se queda en "lax" (sin secure, porque es http).
-    sameSite: isProd ? "none" : "lax",
+    // El frontend le habla a Vercel, que reenvia /api/* a Render por detras
+    // (ver client/vercel.json) — para el navegador todo es el mismo dominio,
+    // asi que "lax" alcanza y evita que Safari/ITP bloquee la cookie como
+    // si fuera de un tercero. "secure" solo en produccion (todo por https).
+    sameSite: "lax",
     secure: isProd,
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
