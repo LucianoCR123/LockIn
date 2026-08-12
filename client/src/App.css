@@ -200,13 +200,42 @@
   margin-bottom: 1rem;
 }
 
-.group-switcher select {
-  width: auto;
+/* El selector tiene que VERSE tocable: borde, fondo y chevron. Antes era
+   texto plano y nadie notaba que se podia cambiar de grupo. */
+.group-switcher-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.group-switcher-control select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
   font-weight: 700;
   border: none;
   background: transparent;
-  padding: 0.2rem 0;
-  font-size: 1rem;
+  padding: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.group-switcher-control select:focus {
+  outline: none;
+}
+
+.group-switcher-icon,
+.group-switcher-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
 }
 
 .group-switcher-name {
@@ -393,6 +422,84 @@
   border-color: var(--primary-soft);
 }
 
+/* Steps race (Top de pasos) */
+.steps-race {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.steps-race-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+}
+
+.steps-race-row-me {
+  background: var(--primary-soft);
+}
+
+.steps-race-row-top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+}
+
+.steps-race-rank {
+  font-weight: 800;
+  color: var(--text-muted);
+  width: 1.6rem;
+  flex-shrink: 0;
+}
+
+.steps-race-count {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.steps-race-track {
+  position: relative;
+  height: 22px;
+  background: var(--surface-alt);
+  border-radius: 999px;
+  margin-left: 1.6rem;
+}
+
+.steps-race-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 0 999px 999px 0;
+  min-width: 22px;
+}
+
+.steps-race-marker {
+  position: absolute;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: white;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.steps-race-fun-fact {
+  background: var(--surface-alt);
+  border-radius: var(--radius-md);
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
 /* Group screen */
 .invite-box {
   display: flex;
@@ -518,9 +625,30 @@
   margin: 0 auto 0.6rem;
 }
 
-.group-select-row button {
-  padding: 0.35rem 0.8rem;
-  font-size: 0.8rem;
+/* La fila entera del grupo es un boton (antes solo lo era el "Ver" chiquito). */
+button.group-select-row {
+  width: 100%;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  border-radius: var(--radius-md);
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+button.group-select-row:hover {
+  background: var(--surface-alt);
+}
+
+button.group-select-row.active {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.group-select-chevron {
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  flex-shrink: 0;
 }
 
 .profile-actions {

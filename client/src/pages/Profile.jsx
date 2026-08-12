@@ -115,21 +115,31 @@ export default function Profile() {
       </div>
 
       <h2>Mis grupos</h2>
+      <p className="muted small">Toca un grupo para entrar y ver su código de invitación y su progreso.</p>
       <ul className="member-list">
         {groups.map((g) => {
           const stats = statsByGroup[g.id];
+          const isActive = g.id === activeGroupId;
           return (
-            <li key={g.id} className={`member-row group-select-row ${g.id === activeGroupId ? "active" : ""}`}>
-              <div className="member-info">
-                <strong>{g.name}</strong>
-                <span className="muted small">{g.memberCount} miembro{g.memberCount === 1 ? "" : "s"}</span>
-              </div>
-              {stats && <span className="score">{stats.weeklyScore}%</span>}
-              {g.id !== activeGroupId && (
-                <button type="button" onClick={() => setActiveGroupId(g.id)}>
-                  Ver
-                </button>
-              )}
+            <li key={g.id}>
+              <button
+                type="button"
+                className={`member-row group-select-row ${isActive ? "active" : ""}`}
+                onClick={() => {
+                  setActiveGroupId(g.id);
+                  navigate("/grupo");
+                }}
+              >
+                <div className="member-info">
+                  <strong>{g.name}</strong>
+                  <span className="muted small">
+                    {g.memberCount} miembro{g.memberCount === 1 ? "" : "s"}
+                    {isActive ? " · grupo activo" : ""}
+                  </span>
+                </div>
+                {stats && <span className="score">{stats.weeklyScore}%</span>}
+                <span className="group-select-chevron">›</span>
+              </button>
             </li>
           );
         })}

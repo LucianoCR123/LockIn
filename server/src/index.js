@@ -6,6 +6,11 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.js";
 import groupRoutes from "./routes/groups.js";
 import logRoutes from "./routes/logs.js";
+import pushRoutes from "./routes/push.js";
+import cronRoutes from "./routes/cron.js";
+import { ensureVapidConfigured } from "./utils/push.js";
+
+ensureVapidConfigured();
 
 const app = express();
 
@@ -18,6 +23,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/logs", logRoutes);
+app.use("/api/push", pushRoutes);
+app.use("/api/cron", cronRoutes);
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 

@@ -38,10 +38,15 @@ export const api = {
   getMembers: (id) => request(`/groups/${id}/members`),
   getDay: (id, date) => request(`/groups/${id}/day/${date}`),
   getCalendar: (id, month) => request(`/groups/${id}/calendar?month=${month}`),
+  getLeaderboard: (id, period) => request(`/groups/${id}/leaderboard?period=${period}`),
   getFeed: (id) => request(`/groups/${id}/feed`),
   sendCheer: (id, payload) => request(`/groups/${id}/cheers`, { method: "POST", body: payload }),
 
   getToday: () => request("/logs/today"),
   saveToday: (payload) => request("/logs/today", { method: "PUT", body: payload }),
   getHistory: () => request("/logs/history"),
+
+  getVapidKey: () => request("/push/vapid-public-key"),
+  subscribePush: (subscription) => request("/push/subscribe", { method: "POST", body: subscription }),
+  unsubscribePush: (endpoint) => request("/push/unsubscribe", { method: "POST", body: { endpoint } }),
 };

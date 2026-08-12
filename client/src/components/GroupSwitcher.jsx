@@ -17,15 +17,19 @@ export default function GroupSwitcher() {
 
   return (
     <div className="group-switcher">
-      <select value={activeGroupId || ""} onChange={(e) => setActiveGroupId(e.target.value)}>
-        {groups.map((g) => (
-          <option key={g.id} value={g.id}>
-            {g.name}
-          </option>
-        ))}
-      </select>
+      <label className="group-switcher-control">
+        <span className="group-switcher-icon">👥</span>
+        <select value={activeGroupId || ""} onChange={(e) => setActiveGroupId(e.target.value)}>
+          {groups.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name}
+            </option>
+          ))}
+        </select>
+        <span className="group-switcher-chevron">▾</span>
+      </label>
       <Link to="/crear-grupo" className="muted small-link">
-        + otro grupo
+        + otro
       </Link>
     </div>
   );

@@ -3,12 +3,22 @@ import { api } from "../api";
 import { useAuth } from "../AuthContext";
 import { useGroups } from "../GroupContext";
 import GroupSwitcher from "../components/GroupSwitcher";
+import StepsRace from "../components/StepsRace";
 import { flagEmoji } from "../flag";
+import { stepsToKm, closestFunDistance } from "../funDistances";
+
+const PERIODS = [
+  { key: "day", label: "Hoy" },
+  { key: "week", label: "Semana" },
+  { key: "month", label: "Mes" },
+];
 
 export default function GroupScreen() {
   const { user } = useAuth();
   const { activeGroup, activeGroupId } = useGroups();
   const [members, setMembers] = useState([]);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [period, setPeriod] = useState("week");
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
@@ -16,11 +26,16 @@ export default function GroupScreen() {
     if (!activeGroupId) return;
     setLoading(true);
     try {
-      setMembers(await api.getMembers(activeGroupId));
+      const [memberList, board] = await Promise.all([
+        api.getMembers(activeGroupId),
+        api.getLeaderboard(activeGroupId, period),
+      ]);
+      setMembers(memberList);
+      setLeaderboard(board);
     } finally {
       setLoading(false);
     }
-  }, [activeGroupId]);
+  }, [activeGroupId, period]);
 
   useEffect(() => {
     load();
@@ -35,6 +50,11 @@ export default function GroupScreen() {
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }
+
+  const myEntry = leaderboard.find((e) => e.userId === user.id);
+  const myKm = myEntry ? stepsToKm(myEntry.totalSteps) : 0;
+  const funFact = myKm > 0 ? closestFunDistance(myKm) : null;
+  const periodLabel = { day: "hoy", week: "esta semana", month: "este mes" }[period];
 
   return (
     <div className="group-page">
@@ -58,7 +78,30 @@ export default function GroupScreen() {
         <li>{r.shitDaysPerMonth} shit day(s) por mes</li>
       </ul>
 
-      <h2>Ranking de la semana</h2>
+      <h2>🏆 Top de pasos</h2>
+      <div className="pill-row">
+        {PERIODS.map((p) => (
+          <button
+            key={p.key}
+            type="button"
+            className={`pill ${period === p.key ? "pill-active" : ""}`}
+            onClick={() => setPeriod(p.key)}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {funFact && (
+        <p className="steps-race-fun-fact">
+          Caminaste <strong>{myKm.toFixed(1)} km</strong> {periodLabel} — ¡como {funFact.label}! 🚶
+        </p>
+      )}
+
+      <StepsRace entries={leaderboard} currentUserId={user.id} />
+
+      <h2>Cumplimiento de la semana</h2>
+      <p className="muted small">Qué tan bien está cumpliendo cada uno las reglas del grupo.</p>
       <ul className="member-list">
         {members.map((m, i) => (
           <li key={m.userId} className="member-row">

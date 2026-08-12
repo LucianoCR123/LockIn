@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import { prisma } from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
 import { computeMemberStats, isDayCompliant } from "../utils/scoring.js";
-import { todayStr, startOfMonth, endOfMonth } from "../utils/dates.js";
+import { todayStr, startOfWeek, startOfMonth, endOfMonth } from "../utils/dates.js";
 
 const router = Router();
 
@@ -42,6 +42,7 @@ function serializeLogFields(log) {
     dietOk: log?.dietOk ?? false,
     usedShitMeal: log?.usedShitMeal ?? false,
     usedShitDay: log?.usedShitDay ?? false,
+    photoUrl: log?.photoUrl ?? null,
   };
 }
 
@@ -230,6 +231,37 @@ router.get("/:id/calendar", requireAuth, requireMembership, async (req, res) => 
   res.json(summary);
 });
 
+router.get("/:id/leaderboard", requireAuth, requireMembership, async (req, res) => {
+  const period = ["day", "week", "month"].includes(req.query.period) ? req.query.period : "week";
+  const today = todayStr(req.user.timezone);
+  const rangeStart = period === "day" ? today : period === "week" ? startOfWeek(today) : startOfMonth(today);
+
+  const memberships = await prisma.groupMembership.findMany({
+    where: { groupId: req.params.id, acceptedRulesAt: { not: null } },
+    include: { user: true },
+  });
+  const memberIds = memberships.map((m) => m.userId);
+
+  const totals = await prisma.dailyLog.groupBy({
+    by: ["userId"],
+    where: { userId: { in: memberIds }, date: { gte: rangeStart, lte: today } },
+    _sum: { steps: true },
+  });
+  const totalsByUser = new Map(totals.map((t) => [t.userId, t._sum.steps || 0]));
+
+  const leaderboard = memberships
+    .map((m) => ({
+      userId: m.userId,
+      displayName: m.user.displayName,
+      country: m.user.country,
+      city: m.user.city,
+      totalSteps: totalsByUser.get(m.userId) || 0,
+    }))
+    .sort((a, b) => b.totalSteps - a.totalSteps);
+
+  res.json(leaderboard);
+});
+
 router.get("/:id/feed", requireAuth, requireMembership, async (req, res) => {
   const group = await prisma.group.findUnique({ where: { id: req.params.id } });
   const memberIds = (
@@ -270,12 +302,14 @@ router.get("/:id/feed", requireAuth, requireMembership, async (req, res) => {
       dietOk: l.dietOk,
       usedShitMeal: l.usedShitMeal,
       usedShitDay: l.usedShitDay,
+      photoUrl: l.photoUrl,
     })),
     ...cheers.map((c) => ({
       type: "cheer",
       at: c.createdAt,
       cheerType: c.type,
       text: c.text,
+      photoUrl: c.photoUrl,
       senderId: c.senderId,
       senderName: c.sender.displayName,
       recipientId: c.recipientId,
@@ -287,7 +321,7 @@ router.get("/:id/feed", requireAuth, requireMembership, async (req, res) => {
 });
 
 router.post("/:id/cheers", requireAuth, requireMembership, async (req, res) => {
-  const { recipientId, type, text } = req.body || {};
+  const { recipientId, type, text, photoUrl } = req.body || {};
   const validTypes = ["encouragement", "congrats", "custom"];
   if (!validTypes.includes(type)) return res.status(400).json({ error: "Tipo de mensaje inválido" });
   if (!text || !text.trim()) return res.status(400).json({ error: "El mensaje no puede estar vacío" });
@@ -306,6 +340,7 @@ router.post("/:id/cheers", requireAuth, requireMembership, async (req, res) => {
       recipientId: recipientId || null,
       type,
       text: text.trim().slice(0, 280),
+      photoUrl: photoUrl || null,
     },
     include: { sender: true, recipient: true },
   });
@@ -314,6 +349,7 @@ router.post("/:id/cheers", requireAuth, requireMembership, async (req, res) => {
     id: cheer.id,
     type: cheer.type,
     text: cheer.text,
+    photoUrl: cheer.photoUrl,
     createdAt: cheer.createdAt,
     senderId: cheer.senderId,
     senderName: cheer.sender.displayName,
