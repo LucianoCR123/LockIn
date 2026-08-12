@@ -33,12 +33,11 @@ export default function StepsRace({ entries, currentUserId }) {
             </div>
             <div className="steps-race-track">
               <div className="steps-race-fill" style={{ width: `${pct}%`, background: color }} />
-              <span
-                className="steps-race-marker"
-                style={{ left: `${pct}%`, background: color }}
-                aria-hidden="true"
-              >
-                {flagEmoji(entry.country) || initial}
+              <span className="steps-race-walker" style={{ left: `${pct}%` }} aria-hidden="true">
+                <span className="steps-race-walker-icon">🚶</span>
+                <span className="steps-race-marker" style={{ background: color }}>
+                  {flagEmoji(entry.country) || initial}
+                </span>
               </span>
             </div>
           </div>

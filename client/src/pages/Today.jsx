@@ -8,12 +8,21 @@ import CheerComposer from "../components/CheerComposer";
 import FeedItem from "../components/FeedItem";
 import Calendar from "../components/Calendar";
 import { flagEmoji } from "../flag";
+import { buildColorMap } from "../categoricalColors";
 
-const emptyLog = { steps: 0, workoutDone: false, dietOk: false, usedShitMeal: false, usedShitDay: false, note: "" };
+const emptyLog = {
+  steps: 0,
+  workoutDone: false,
+  dietOk: false,
+  usedShitMeal: false,
+  usedShitDay: false,
+  note: "",
+  groupIds: [],
+};
 
 export default function Today() {
   const { user } = useAuth();
-  const { activeGroup, activeGroupId } = useGroups();
+  const { groups, activeGroup, activeGroupId } = useGroups();
   const [log, setLog] = useState(emptyLog);
   const [todayDate, setTodayDate] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -82,10 +91,24 @@ export default function Today() {
     setLog((l) => ({ ...l, [field]: !l[field] }));
   }
 
+  // groupIds vacio significa "cuenta para todos mis grupos". Al destildar uno
+  // se materializa la lista; nunca se permite dejar cero grupos.
+  function toggleGroup(groupId) {
+    setLog((l) => {
+      const allIds = groups.map((g) => g.id);
+      const current = l.groupIds.length === 0 ? allIds : l.groupIds;
+      const next = current.includes(groupId) ? current.filter((id) => id !== groupId) : [...current, groupId];
+      if (next.length === 0) return l;
+      return { ...l, groupIds: next.length === allIds.length ? [] : next };
+    });
+  }
+
   if (loading || !selectedDate) return <p className="muted">Cargando...</p>;
 
   const me = members.find((m) => m.userId === user.id);
   const rules = activeGroup?.rules;
+  // Mismo color por persona en el feed y en el Top de pasos.
+  const feedColors = buildColorMap(members.map((m) => m.userId));
   const isToday = selectedDate === todayDate;
   const dayList = isToday
     ? members.map((m) => ({ userId: m.userId, displayName: m.displayName, country: m.country, city: m.city, log: m.today }))
@@ -137,6 +160,27 @@ export default function Today() {
                 )}
               </div>
             )}
+            {groups.length > 1 && (
+              <div className="checkin-groups">
+                <span className="muted small">¿A qué grupos cuenta este día?</span>
+                <div className="pill-row">
+                  {groups.map((g) => {
+                    const selected = log.groupIds.length === 0 || log.groupIds.includes(g.id);
+                    return (
+                      <button
+                        key={g.id}
+                        type="button"
+                        className={`pill ${selected ? "pill-active" : ""}`}
+                        onClick={() => toggleGroup(g.id)}
+                      >
+                        {selected ? "✓ " : ""}
+                        {g.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {error && <p className="error">{error}</p>}
             <button type="submit" disabled={saving}>
               {saving ? "Guardando..." : "Guardar check-in"}
@@ -179,10 +223,12 @@ export default function Today() {
       <CheerComposer members={members} onSent={loadAll} />
 
       <h2>Actividad reciente</h2>
-      {feed.length === 0 && <p className="muted">Todavía no hay actividad esta semana.</p>}
+      {feed.length === 0 && (
+        <p className="muted feed-empty">Todavía no hay actividad esta semana. Sé el primero en registrar tu día 💪</p>
+      )}
       <div className="feed-list">
         {feed.map((item, i) => (
-          <FeedItem key={i} item={item} currentUserId={user.id} />
+          <FeedItem key={i} item={item} currentUserId={user.id} colorMap={feedColors} />
         ))}
       </div>
       <p className="muted small-link">

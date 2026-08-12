@@ -78,6 +78,9 @@ model DailyLog {
   usedShitDay  Boolean  @default(false)
   note         String?
   photoUrl     String? // prueba opcional (Cloudinary)
+  // A que grupos cuenta este dia. Vacio = cuenta para TODOS los grupos del
+  // usuario (default, y comportamiento historico).
+  groupIds     String[]
   updatedAt    DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])

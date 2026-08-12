@@ -361,6 +361,12 @@
   box-shadow: var(--shadow-sm);
 }
 
+.checkin-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
 .day-viewing-banner {
   display: flex;
   align-items: center;
@@ -394,7 +400,7 @@
 .feed-list {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0.6rem;
 }
 
 .feed-item {
@@ -403,23 +409,75 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 0.75rem 0.9rem;
+  padding: 0.8rem 0.9rem;
   box-shadow: var(--shadow-sm);
 }
 
-.feed-item-emoji {
-  font-size: 1.2rem;
-  line-height: 1;
+.feed-avatar {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
 }
 
-.feed-item p {
+.feed-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.feed-item-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.feed-item-text {
   margin: 0;
   font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.feed-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.feed-chip {
+  background: var(--surface-alt);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.feed-item-photo {
+  margin-top: 0.2rem;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  display: block;
 }
 
 .feed-item-cheer {
   background: var(--primary-soft);
-  border-color: var(--primary-soft);
+  border-color: transparent;
+}
+
+.feed-item-cheer .feed-chip {
+  background: rgba(255, 255, 255, 0.6);
 }
 
 /* Steps race (Top de pasos) */
@@ -473,15 +531,50 @@
   inset: 0 auto 0 0;
   border-radius: 0 999px 999px 0;
   min-width: 22px;
+  /* la barra "avanza" al cargar y al cambiar de periodo */
+  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.steps-race-walker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  transition: left 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.steps-race-walker-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+  animation: steps-race-bob 1.1s ease-in-out infinite;
+}
+
+@keyframes steps-race-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .steps-race-fill,
+  .steps-race-walker {
+    transition: none;
+  }
+  .steps-race-walker-icon {
+    animation: none;
+  }
 }
 
 .steps-race-marker {
-  position: absolute;
-  top: 50%;
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  transform: translate(-50%, -50%);
   border: 2px solid var(--surface);
   display: flex;
   align-items: center;
@@ -490,6 +583,14 @@
   color: white;
   font-weight: 700;
   box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.feed-empty {
+  background: var(--surface-alt);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  text-align: center;
 }
 
 .steps-race-fun-fact {

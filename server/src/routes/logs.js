@@ -15,6 +15,7 @@ function serializeLog(log, date) {
     usedShitMeal: log?.usedShitMeal ?? false,
     usedShitDay: log?.usedShitDay ?? false,
     photoUrl: log?.photoUrl ?? null,
+    groupIds: log?.groupIds ?? [],
     note: log?.note ?? "",
   };
 }
@@ -32,8 +33,11 @@ async function notifyGroupmatesOfCheckin(userId, displayName, log) {
   });
   if (memberships.length === 0) return;
 
+  // Solo avisa en los grupos a los que cuenta este check-in.
+  const scoped = log.groupIds.length > 0 ? log.groupIds : memberships.map((m) => m.groupId);
+
   const groupmates = await prisma.groupMembership.findMany({
-    where: { groupId: { in: memberships.map((m) => m.groupId) }, acceptedRulesAt: { not: null }, userId: { not: userId } },
+    where: { groupId: { in: scoped }, acceptedRulesAt: { not: null }, userId: { not: userId } },
     select: { userId: true },
   });
   const otherUserIds = [...new Set(groupmates.map((m) => m.userId))];
@@ -56,9 +60,22 @@ router.get("/today", requireAuth, async (req, res) => {
 
 router.put("/today", requireAuth, async (req, res) => {
   const date = todayStr(req.user.timezone);
-  const { steps, workoutDone, dietOk, usedShitMeal, usedShitDay, note, photoUrl } = req.body || {};
+  const { steps, workoutDone, dietOk, usedShitMeal, usedShitDay, note, photoUrl, groupIds } = req.body || {};
 
   const previous = await prisma.dailyLog.findUnique({ where: { userId_date: { userId: req.user.id, date } } });
+
+  // Solo se aceptan grupos a los que el usuario realmente pertenece. Lista
+  // vacia = cuenta para todos sus grupos.
+  let scopedGroupIds = previous?.groupIds ?? [];
+  if (Array.isArray(groupIds)) {
+    const myGroups = await prisma.groupMembership.findMany({
+      where: { userId: req.user.id, acceptedRulesAt: { not: null } },
+      select: { groupId: true },
+    });
+    const myGroupIds = new Set(myGroups.map((m) => m.groupId));
+    const requested = groupIds.filter((id) => myGroupIds.has(id));
+    scopedGroupIds = requested.length === myGroupIds.size ? [] : requested;
+  }
 
   const data = {
     steps: Math.max(0, Number(steps) || 0),
@@ -68,6 +85,7 @@ router.put("/today", requireAuth, async (req, res) => {
     usedShitDay: Boolean(usedShitDay),
     note: typeof note === "string" ? note.slice(0, 280) : "",
     photoUrl: typeof photoUrl === "string" && photoUrl ? photoUrl : previous?.photoUrl || null,
+    groupIds: scopedGroupIds,
   };
 
   const log = await prisma.dailyLog.upsert({

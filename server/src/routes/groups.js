@@ -35,6 +35,12 @@ function serializeGroup(group) {
   };
 }
 
+// Un DailyLog cuenta para un grupo si el usuario no restringio nada
+// (groupIds vacio = todos sus grupos) o si eligio explicitamente ese grupo.
+function logCountsForGroup(groupId) {
+  return { OR: [{ groupIds: { isEmpty: true } }, { groupIds: { has: groupId } }] };
+}
+
 function serializeLogFields(log) {
   return {
     steps: log?.steps ?? 0,
@@ -151,7 +157,7 @@ router.get("/:id/members", requireAuth, requireMembership, async (req, res) => {
   const members = await Promise.all(
     memberships.map(async (m) => {
       const logs = await prisma.dailyLog.findMany({
-        where: { userId: m.userId, date: { gte: monthStart, lte: today } },
+        where: { userId: m.userId, date: { gte: monthStart, lte: today }, ...logCountsForGroup(group.id) },
       });
       const todayLog = logs.find((l) => l.date === today) || null;
       const stats = computeMemberStats(group, logs, timezone);
@@ -181,7 +187,7 @@ router.get("/:id/day/:date", requireAuth, requireMembership, async (req, res) =>
   });
 
   const logs = await prisma.dailyLog.findMany({
-    where: { userId: { in: memberships.map((m) => m.userId) }, date },
+    where: { userId: { in: memberships.map((m) => m.userId) }, date, ...logCountsForGroup(req.params.id) },
   });
   const byUser = new Map(logs.map((l) => [l.userId, l]));
 
@@ -210,7 +216,7 @@ router.get("/:id/calendar", requireAuth, requireMembership, async (req, res) => 
 
   const group = await prisma.group.findUnique({ where: { id: req.params.id } });
   const logs = await prisma.dailyLog.findMany({
-    where: { userId: { in: memberIds }, date: { gte: monthStart, lte: monthEnd } },
+    where: { userId: { in: memberIds }, date: { gte: monthStart, lte: monthEnd }, ...logCountsForGroup(req.params.id) },
   });
 
   const byDate = new Map();
@@ -244,7 +250,7 @@ router.get("/:id/leaderboard", requireAuth, requireMembership, async (req, res) 
 
   const totals = await prisma.dailyLog.groupBy({
     by: ["userId"],
-    where: { userId: { in: memberIds }, date: { gte: rangeStart, lte: today } },
+    where: { userId: { in: memberIds }, date: { gte: rangeStart, lte: today }, ...logCountsForGroup(req.params.id) },
     _sum: { steps: true },
   });
   const totalsByUser = new Map(totals.map((t) => [t.userId, t._sum.steps || 0]));
@@ -275,7 +281,7 @@ router.get("/:id/feed", requireAuth, requireMembership, async (req, res) => {
 
   const [logs, cheers] = await Promise.all([
     prisma.dailyLog.findMany({
-      where: { userId: { in: memberIds }, updatedAt: { gte: sevenDaysAgo } },
+      where: { userId: { in: memberIds }, updatedAt: { gte: sevenDaysAgo }, ...logCountsForGroup(group.id) },
       include: { user: true },
       orderBy: { updatedAt: "desc" },
       take: 50,
@@ -312,6 +318,7 @@ router.get("/:id/feed", requireAuth, requireMembership, async (req, res) => {
       photoUrl: c.photoUrl,
       senderId: c.senderId,
       senderName: c.sender.displayName,
+      senderCountry: c.sender.country,
       recipientId: c.recipientId,
       recipientName: c.recipient?.displayName || null,
     })),
