@@ -12,7 +12,7 @@ export default function Onboarding() {
       <div className="onboarding-actions">
         <Link to="/crear-grupo" className="onboarding-option">
           <strong>Crear un grupo</strong>
-          <span className="muted">Defines las reglas: pasos mínimos, entrenamientos por semana, shit meals/days.</span>
+          <span className="muted">Defines las reglas: pasos mínimos, entrenamientos por semana, cheat meals/days.</span>
         </Link>
         <Link to="/unirse" className="onboarding-option">
           <strong>Unirme a un grupo</strong>

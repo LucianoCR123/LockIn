@@ -53,8 +53,8 @@ export default function JoinGroup() {
         <ul className="rules-list">
           <li>Mínimo {r.minDailySteps.toLocaleString()} pasos por día</li>
           <li>Mínimo {r.minWeeklyWorkouts} entrenamientos por semana</li>
-          <li>{r.shitMealsPerWeek} shit meal(s) permitidos por semana</li>
-          <li>{r.shitDaysPerMonth} shit day(s) permitidos por mes</li>
+          <li>{r.shitMealsPerWeek} cheat meal(s) permitidos por semana</li>
+          <li>{r.shitDaysPerMonth} cheat day(s) permitidos por mes</li>
         </ul>
         {preview.alreadyMember ? (
           <p className="success">Ya perteneces a este grupo.</p>

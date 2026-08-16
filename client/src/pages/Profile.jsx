@@ -10,6 +10,7 @@ export default function Profile() {
   const { user, setUser, logout } = useAuth();
   const { groups, activeGroupId, setActiveGroupId } = useGroups();
   const [statsByGroup, setStatsByGroup] = useState({});
+  const [bestDay, setBestDay] = useState(null);
   const [error, setError] = useState("");
   const [editingLocation, setEditingLocation] = useState(false);
   const [locationForm, setLocationForm] = useState({ country: user.country || "", city: user.city || "" });
@@ -33,6 +34,18 @@ export default function Profile() {
       cancelled = true;
     };
   }, [groups, user.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.getHistory().then((history) => {
+      if (cancelled || history.length === 0) return;
+      const best = history.reduce((a, b) => (b.steps > a.steps ? b : a));
+      if (best.steps > 0) setBestDay(best);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleSaveLocation(e) {
     e.preventDefault();
@@ -65,6 +78,15 @@ export default function Profile() {
       setError(err.message);
     }
   }
+
+  const activeGroup = groups.find((g) => g.id === activeGroupId);
+  const activeStats = statsByGroup[activeGroupId];
+  const bestGroup = groups.reduce((best, g) => {
+    const stats = statsByGroup[g.id];
+    if (!stats) return best;
+    if (!best || stats.weeklyScore > best.stats.weeklyScore) return { ...g, stats };
+    return best;
+  }, null);
 
   return (
     <div className="profile-page-content">
@@ -152,6 +174,46 @@ export default function Profile() {
         <Link to="/unirse" className="pill">
           + Unirme a otro grupo
         </Link>
+      </div>
+
+      <h2>Mis logros</h2>
+      <div className="achievements-grid">
+        {activeStats && (
+          <div className="achievement-tile">
+            <span className="achievement-value">🔥 {activeStats.streak}</span>
+            <span className="muted small">
+              día{activeStats.streak === 1 ? "" : "s"} de racha en {activeGroup?.name}
+            </span>
+          </div>
+        )}
+        {bestDay && (
+          <div className="achievement-tile">
+            <span className="achievement-value">👣 {bestDay.steps.toLocaleString()}</span>
+            <span className="muted small">tu mejor día ({bestDay.date})</span>
+          </div>
+        )}
+        {activeStats && activeStats.shitMealsAllowed > 0 && (
+          <div className="achievement-tile">
+            <span className="achievement-value">
+              🍔 {activeStats.shitMealsUsedWeek}/{activeStats.shitMealsAllowed}
+            </span>
+            <span className="muted small">cheat meals usados esta semana</span>
+          </div>
+        )}
+        {activeStats && activeStats.shitDaysAllowed > 0 && (
+          <div className="achievement-tile">
+            <span className="achievement-value">
+              🍕 {activeStats.shitDaysUsedMonth}/{activeStats.shitDaysAllowed}
+            </span>
+            <span className="muted small">cheat days usados este mes</span>
+          </div>
+        )}
+        {bestGroup && (
+          <div className="achievement-tile">
+            <span className="achievement-value">🏆 {bestGroup.stats.weeklyScore}%</span>
+            <span className="muted small">tu mejor grupo esta semana: {bestGroup.name}</span>
+          </div>
+        )}
       </div>
 
       {error && <p className="error">{error}</p>}

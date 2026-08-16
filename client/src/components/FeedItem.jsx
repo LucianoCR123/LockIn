@@ -51,8 +51,8 @@ export default function FeedItem({ item, currentUserId, colorMap }) {
   if (item.steps > 0) chips.push(`👣 ${item.steps.toLocaleString()}`);
   if (item.workoutDone) chips.push("🏋️ Gym");
   if (item.dietOk) chips.push("🥗 Dieta");
-  if (item.usedShitMeal) chips.push("🍔 Shit meal");
-  if (item.usedShitDay) chips.push("🍕 Shit day");
+  if (item.usedShitMeal) chips.push("🍔 Cheat meal");
+  if (item.usedShitDay) chips.push("🍕 Cheat day");
 
   const isMe = item.userId === currentUserId;
 

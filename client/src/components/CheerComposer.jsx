@@ -1,30 +1,26 @@
 import { useState } from "react";
 import { api } from "../api";
 import { useGroups } from "../GroupContext";
-import { useAuth } from "../AuthContext";
-import { flagEmoji } from "../flag";
 
 const PRESETS = [
   { type: "encouragement", text: "Dale, tú puedes 💪" },
   { type: "congrats", text: "Felicitaciones por el gym 🎉" },
 ];
 
-export default function CheerComposer({ members, onSent }) {
+// Mensajes siempre al grupo entero — no hay para que escoger a una sola
+// persona, es un mensaje de animo colectivo.
+export default function CheerComposer({ onSent }) {
   const { activeGroupId } = useGroups();
-  const { user } = useAuth();
-  const [recipientId, setRecipientId] = useState("");
   const [customText, setCustomText] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
-
-  const others = members.filter((m) => m.userId !== user.id);
 
   async function send(type, text) {
     if (!text.trim()) return;
     setError("");
     setSending(true);
     try {
-      await api.sendCheer(activeGroupId, { recipientId: recipientId || null, type, text: text.trim() });
+      await api.sendCheer(activeGroupId, { recipientId: null, type, text: text.trim() });
       setCustomText("");
       onSent?.();
     } catch (err) {
@@ -36,15 +32,7 @@ export default function CheerComposer({ members, onSent }) {
 
   return (
     <div className="cheer-composer">
-      <h2>Mandar un mensaje</h2>
-      <select value={recipientId} onChange={(e) => setRecipientId(e.target.value)} className="cheer-recipient">
-        <option value="">Todo el grupo</option>
-        {others.map((m) => (
-          <option key={m.userId} value={m.userId}>
-            {flagEmoji(m.country)} {m.displayName}
-          </option>
-        ))}
-      </select>
+      <h2>Mandar un mensaje al grupo</h2>
       <div className="pill-row">
         {PRESETS.map((p) => (
           <button key={p.type} type="button" className="pill" disabled={sending} onClick={() => send(p.type, p.text)}>

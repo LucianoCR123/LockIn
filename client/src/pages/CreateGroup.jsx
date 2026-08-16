@@ -66,7 +66,7 @@ export default function CreateGroup() {
           />
         </label>
         <label>
-          Shit meals permitidos por semana
+          Cheat meals permitidos por semana
           <input
             required
             type="number"
@@ -76,7 +76,7 @@ export default function CreateGroup() {
           />
         </label>
         <label>
-          Shit days permitidos por mes
+          Cheat days permitidos por mes
           <input
             required
             type="number"

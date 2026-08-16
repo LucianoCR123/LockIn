@@ -29,7 +29,10 @@
   min-height: 0;
   overflow-y: auto;
   width: 100%;
-  padding: 1.4rem 1.2rem 2rem;
+  /* En iPhone con la app agregada a inicio, el notch/isla dinamica se come
+     el contenido si no se le deja aire — env(safe-area-inset-top) es 0 en
+     un navegador normal y el alto real del notch en modo standalone. */
+  padding: calc(1.4rem + env(safe-area-inset-top)) 1.2rem 2rem;
 }
 
 /* Bottom tab bar */
@@ -365,6 +368,124 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  background: var(--surface-alt);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.8rem;
+  margin: 0.8rem 0 1rem;
+}
+
+.checkin-groups-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Checklist (gym / dieta) */
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem;
+  color: var(--text);
+  font-weight: 500;
+  font-size: 0.92rem;
+  text-align: left;
+}
+
+.checklist-item:hover {
+  border-color: var(--primary);
+}
+
+.checklist-box {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.checklist-box-checked {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+/* Cupones (cheat meal/day) — se ven como boletos, distintos del checklist */
+.coupons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.coupon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: var(--surface);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+}
+
+.coupon-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--surface-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.coupon-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  color: var(--text);
+}
+
+.coupon-check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: white;
+}
+
+.coupon-used {
+  border-style: solid;
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.coupon-used .coupon-check {
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
 .day-viewing-banner {
@@ -681,6 +802,12 @@
   border-radius: 999px;
 }
 
+.badge-mini-used {
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-weight: 700;
+}
+
 .rank {
   font-weight: 800;
   width: 1.6rem;
@@ -698,6 +825,29 @@
   font-weight: 700;
   font-size: 0.85rem;
   flex-shrink: 0;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+  margin: 0.8rem 0 1.2rem;
+}
+
+.achievement-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.achievement-value {
+  font-size: 1.1rem;
+  font-weight: 800;
 }
 
 /* Profile */

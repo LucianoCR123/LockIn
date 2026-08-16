@@ -71,11 +71,12 @@ export default function GroupScreen() {
         </button>
       </div>
 
+      <h2>Reglas de este grupo</h2>
       <ul className="rules-list">
         <li>Mínimo {r.minDailySteps.toLocaleString()} pasos por día</li>
         <li>Mínimo {r.minWeeklyWorkouts} entrenamientos por semana</li>
-        <li>{r.shitMealsPerWeek} shit meal(s) por semana</li>
-        <li>{r.shitDaysPerMonth} shit day(s) por mes</li>
+        <li>{r.shitMealsPerWeek} cheat meal(s) por semana</li>
+        <li>{r.shitDaysPerMonth} cheat day(s) por mes</li>
       </ul>
 
       <h2>🏆 Top de pasos</h2>
@@ -100,8 +101,38 @@ export default function GroupScreen() {
 
       <StepsRace entries={leaderboard} currentUserId={user.id} />
 
-      <h2>Cumplimiento de la semana</h2>
-      <p className="muted small">Qué tan bien está cumpliendo cada uno las reglas del grupo.</p>
+      {(r.shitMealsPerWeek > 0 || r.shitDaysPerMonth > 0) && (
+        <>
+          <h2>🎟️ Comodines</h2>
+          <ul className="member-list">
+            {members.map((m) => (
+              <li key={m.userId} className="member-row">
+                <div className="member-info">
+                  <strong>
+                    {flagEmoji(m.country)} {m.displayName}
+                    {m.userId === user.id ? " (tú)" : ""}
+                  </strong>
+                  <div className="member-badges">
+                    {r.shitMealsPerWeek > 0 && (
+                      <span className={`badge-mini ${m.stats.shitMealsUsedWeek >= m.stats.shitMealsAllowed ? "badge-mini-used" : ""}`}>
+                        🍔 {m.stats.shitMealsUsedWeek}/{m.stats.shitMealsAllowed}
+                      </span>
+                    )}
+                    {r.shitDaysPerMonth > 0 && (
+                      <span className={`badge-mini ${m.stats.shitDaysUsedMonth >= m.stats.shitDaysAllowed ? "badge-mini-used" : ""}`}>
+                        🍕 {m.stats.shitDaysUsedMonth}/{m.stats.shitDaysAllowed}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <h2>Calificación</h2>
+      <p className="muted small">Ranking de quién está cumpliendo mejor las reglas del grupo.</p>
       <ul className="member-list">
         {members.map((m, i) => (
           <li key={m.userId} className="member-row">
